@@ -5,7 +5,7 @@
 # For format details, see: https://gh.io/customagents/config
 
 name: Senior Backend Engeener
-description:
+description: Бэкенд разработчик интеграционных систем
 ---
 
 # My Agent
