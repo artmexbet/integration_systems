@@ -7,10 +7,66 @@ package queries
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const CountLaureates = `-- name: CountLaureates :one
+SELECT COUNT(*) FROM laureates
+`
+
+func (q *Queries) CountLaureates(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, CountLaureates)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const CreateLaureateSingle = `-- name: CreateLaureateSingle :one
+INSERT INTO laureates (id, firstname, surname, motivation, share)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, firstname, surname, motivation, share, updated_at
+`
+
+type CreateLaureateSingleParams struct {
+	ID         int32
+	Firstname  string
+	Surname    pgtype.Text
+	Motivation string
+	Share      int32
+}
+
+func (q *Queries) CreateLaureateSingle(ctx context.Context, arg CreateLaureateSingleParams) (Laureate, error) {
+	row := q.db.QueryRow(ctx, CreateLaureateSingle,
+		arg.ID,
+		arg.Firstname,
+		arg.Surname,
+		arg.Motivation,
+		arg.Share,
+	)
+	var i Laureate
+	err := row.Scan(
+		&i.ID,
+		&i.Firstname,
+		&i.Surname,
+		&i.Motivation,
+		&i.Share,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const DeleteLaureate = `-- name: DeleteLaureate :exec
+DELETE FROM laureates WHERE id = $1
+`
+
+func (q *Queries) DeleteLaureate(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, DeleteLaureate, id)
+	return err
+}
+
 const GetLaureate = `-- name: GetLaureate :one
-SELECT id, firstname, surname, motivation, share FROM laureates
+SELECT id, firstname, surname, motivation, share, updated_at FROM laureates
          WHERE id = $1
 `
 
@@ -23,12 +79,28 @@ func (q *Queries) GetLaureate(ctx context.Context, id int32) (Laureate, error) {
 		&i.Surname,
 		&i.Motivation,
 		&i.Share,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
+const LinkLaureateToPrizeSingle = `-- name: LinkLaureateToPrizeSingle :exec
+INSERT INTO prizes_to_laureates (prize_id, laureate_id)
+VALUES ($1, $2)
+`
+
+type LinkLaureateToPrizeSingleParams struct {
+	PrizeID    int32
+	LaureateID int32
+}
+
+func (q *Queries) LinkLaureateToPrizeSingle(ctx context.Context, arg LinkLaureateToPrizeSingleParams) error {
+	_, err := q.db.Exec(ctx, LinkLaureateToPrizeSingle, arg.PrizeID, arg.LaureateID)
+	return err
+}
+
 const ListLaureates = `-- name: ListLaureates :many
-SELECT id, firstname, surname, motivation, share FROM laureates
+SELECT id, firstname, surname, motivation, share, updated_at FROM laureates
             ORDER BY id
 `
 
@@ -47,6 +119,7 @@ func (q *Queries) ListLaureates(ctx context.Context) ([]Laureate, error) {
 			&i.Surname,
 			&i.Motivation,
 			&i.Share,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -56,4 +129,77 @@ func (q *Queries) ListLaureates(ctx context.Context) ([]Laureate, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const ListLaureatesPaginated = `-- name: ListLaureatesPaginated :many
+SELECT id, firstname, surname, motivation, share, updated_at FROM laureates
+            ORDER BY id
+            LIMIT $1 OFFSET $2
+`
+
+type ListLaureatesPaginatedParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListLaureatesPaginated(ctx context.Context, arg ListLaureatesPaginatedParams) ([]Laureate, error) {
+	rows, err := q.db.Query(ctx, ListLaureatesPaginated, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Laureate
+	for rows.Next() {
+		var i Laureate
+		if err := rows.Scan(
+			&i.ID,
+			&i.Firstname,
+			&i.Surname,
+			&i.Motivation,
+			&i.Share,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const UpdateLaureate = `-- name: UpdateLaureate :one
+UPDATE laureates
+SET firstname = $2, surname = $3, motivation = $4, share = $5, updated_at = NOW()
+WHERE id = $1
+RETURNING id, firstname, surname, motivation, share, updated_at
+`
+
+type UpdateLaureateParams struct {
+	ID         int32
+	Firstname  string
+	Surname    pgtype.Text
+	Motivation string
+	Share      int32
+}
+
+func (q *Queries) UpdateLaureate(ctx context.Context, arg UpdateLaureateParams) (Laureate, error) {
+	row := q.db.QueryRow(ctx, UpdateLaureate,
+		arg.ID,
+		arg.Firstname,
+		arg.Surname,
+		arg.Motivation,
+		arg.Share,
+	)
+	var i Laureate
+	err := row.Scan(
+		&i.ID,
+		&i.Firstname,
+		&i.Surname,
+		&i.Motivation,
+		&i.Share,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

@@ -20,7 +20,7 @@ var (
 const AddPrize = `-- name: AddPrize :batchone
 INSERT INTO prizes (year, category)
 VALUES ($1, $2)
-RETURNING id, year, category
+RETURNING id, year, category, updated_at
 `
 
 type AddPrizeBatchResults struct {
@@ -58,7 +58,12 @@ func (b *AddPrizeBatchResults) QueryRow(f func(int, Prize, error)) {
 			continue
 		}
 		row := b.br.QueryRow()
-		err := row.Scan(&i.ID, &i.Year, &i.Category)
+		err := row.Scan(
+			&i.ID,
+			&i.Year,
+			&i.Category,
+			&i.UpdatedAt,
+		)
 		if f != nil {
 			f(t, i, err)
 		}
@@ -73,7 +78,7 @@ func (b *AddPrizeBatchResults) Close() error {
 const CreateLaureate = `-- name: CreateLaureate :batchone
 INSERT INTO laureates (id, firstname, surname, motivation, share)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, firstname, surname, motivation, share
+RETURNING id, firstname, surname, motivation, share, updated_at
 `
 
 type CreateLaureateBatchResults struct {
@@ -123,6 +128,7 @@ func (b *CreateLaureateBatchResults) QueryRow(f func(int, Laureate, error)) {
 			&i.Surname,
 			&i.Motivation,
 			&i.Share,
+			&i.UpdatedAt,
 		)
 		if f != nil {
 			f(t, i, err)
