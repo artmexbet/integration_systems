@@ -7,42 +7,101 @@ package queries
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const PrizesList = `-- name: PrizesList :many
-SELECT
-  prizes.id, prizes.year, prizes.category,
-  COALESCE(
-    jsonb_agg(to_jsonb(laureates) ORDER BY laureates.id) FILTER (WHERE laureates.id IS NOT NULL),
-    '[]'
-  ) AS laureates
-FROM prizes
-LEFT JOIN laureates ON laureates.id = prizes.laureate_id
-GROUP BY prizes.id
-ORDER BY prizes.id
+const AddPrizeSingle = `-- name: AddPrizeSingle :one
+INSERT INTO prizes (year, category)
+VALUES ($1, $2)
+RETURNING id, year, category, updated_at
 `
 
-type PrizesListRow struct {
-	ID        int32
-	Year      int32
-	Category  string
-	Laureates interface{}
+type AddPrizeSingleParams struct {
+	Year     int32
+	Category string
 }
 
-func (q *Queries) PrizesList(ctx context.Context) ([]PrizesListRow, error) {
-	rows, err := q.db.Query(ctx, PrizesList)
+func (q *Queries) AddPrizeSingle(ctx context.Context, arg AddPrizeSingleParams) (Prize, error) {
+	row := q.db.QueryRow(ctx, AddPrizeSingle, arg.Year, arg.Category)
+	var i Prize
+	err := row.Scan(
+		&i.ID,
+		&i.Year,
+		&i.Category,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const CountPrizes = `-- name: CountPrizes :one
+SELECT COUNT(*) FROM prizes
+`
+
+func (q *Queries) CountPrizes(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, CountPrizes)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const DeletePrize = `-- name: DeletePrize :exec
+DELETE FROM prizes WHERE id = $1
+`
+
+func (q *Queries) DeletePrize(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, DeletePrize, id)
+	return err
+}
+
+const GetCategories = `-- name: GetCategories :many
+SELECT DISTINCT category FROM prizes ORDER BY category
+`
+
+func (q *Queries) GetCategories(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, GetCategories)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []PrizesListRow
+	var items []string
 	for rows.Next() {
-		var i PrizesListRow
+		var category string
+		if err := rows.Scan(&category); err != nil {
+			return nil, err
+		}
+		items = append(items, category)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetLaureatesByPrizeId = `-- name: GetLaureatesByPrizeId :many
+SELECT l.id, l.firstname, l.surname, l.motivation, l.share, l.updated_at 
+FROM laureates l
+INNER JOIN prizes_to_laureates ptl ON l.id = ptl.laureate_id
+WHERE ptl.prize_id = $1
+ORDER BY l.id
+`
+
+func (q *Queries) GetLaureatesByPrizeId(ctx context.Context, prizeID int32) ([]Laureate, error) {
+	rows, err := q.db.Query(ctx, GetLaureatesByPrizeId, prizeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Laureate
+	for rows.Next() {
+		var i Laureate
 		if err := rows.Scan(
 			&i.ID,
-			&i.Year,
-			&i.Category,
-			&i.Laureates,
+			&i.Firstname,
+			&i.Surname,
+			&i.Motivation,
+			&i.Share,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -52,4 +111,268 @@ func (q *Queries) PrizesList(ctx context.Context) ([]PrizesListRow, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const GetPrize = `-- name: GetPrize :one
+SELECT id, year, category, updated_at FROM prizes WHERE id = $1
+`
+
+func (q *Queries) GetPrize(ctx context.Context, id int32) (Prize, error) {
+	row := q.db.QueryRow(ctx, GetPrize, id)
+	var i Prize
+	err := row.Scan(
+		&i.ID,
+		&i.Year,
+		&i.Category,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const GetPrizeWithLaureates = `-- name: GetPrizeWithLaureates :many
+SELECT 
+  p.id as prize_id, p.year, p.category,
+  l.id as laureate_id, l.firstname, l.surname, l.motivation, l.share
+FROM prizes p
+LEFT JOIN prizes_to_laureates ptl ON p.id = ptl.prize_id
+LEFT JOIN laureates l ON ptl.laureate_id = l.id
+WHERE p.id = $1
+ORDER BY l.id
+`
+
+type GetPrizeWithLaureatesRow struct {
+	PrizeID    int32
+	Year       int32
+	Category   string
+	LaureateID pgtype.Int4
+	Firstname  pgtype.Text
+	Surname    pgtype.Text
+	Motivation pgtype.Text
+	Share      pgtype.Int4
+}
+
+func (q *Queries) GetPrizeWithLaureates(ctx context.Context, id int32) ([]GetPrizeWithLaureatesRow, error) {
+	rows, err := q.db.Query(ctx, GetPrizeWithLaureates, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPrizeWithLaureatesRow
+	for rows.Next() {
+		var i GetPrizeWithLaureatesRow
+		if err := rows.Scan(
+			&i.PrizeID,
+			&i.Year,
+			&i.Category,
+			&i.LaureateID,
+			&i.Firstname,
+			&i.Surname,
+			&i.Motivation,
+			&i.Share,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetPrizesByCategoryWithLaureates = `-- name: GetPrizesByCategoryWithLaureates :many
+SELECT 
+  p.id as prize_id, p.year, p.category,
+  l.id as laureate_id, l.firstname, l.surname, l.motivation, l.share
+FROM prizes p
+LEFT JOIN prizes_to_laureates ptl ON p.id = ptl.prize_id
+LEFT JOIN laureates l ON ptl.laureate_id = l.id
+WHERE p.category = $1
+ORDER BY p.year DESC, l.id
+`
+
+type GetPrizesByCategoryWithLaureatesRow struct {
+	PrizeID    int32
+	Year       int32
+	Category   string
+	LaureateID pgtype.Int4
+	Firstname  pgtype.Text
+	Surname    pgtype.Text
+	Motivation pgtype.Text
+	Share      pgtype.Int4
+}
+
+func (q *Queries) GetPrizesByCategoryWithLaureates(ctx context.Context, category string) ([]GetPrizesByCategoryWithLaureatesRow, error) {
+	rows, err := q.db.Query(ctx, GetPrizesByCategoryWithLaureates, category)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPrizesByCategoryWithLaureatesRow
+	for rows.Next() {
+		var i GetPrizesByCategoryWithLaureatesRow
+		if err := rows.Scan(
+			&i.PrizeID,
+			&i.Year,
+			&i.Category,
+			&i.LaureateID,
+			&i.Firstname,
+			&i.Surname,
+			&i.Motivation,
+			&i.Share,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const PrizesByCategory = `-- name: PrizesByCategory :many
+SELECT id, year, category, updated_at FROM prizes WHERE category = $1 ORDER BY year DESC
+`
+
+func (q *Queries) PrizesByCategory(ctx context.Context, category string) ([]Prize, error) {
+	rows, err := q.db.Query(ctx, PrizesByCategory, category)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Prize
+	for rows.Next() {
+		var i Prize
+		if err := rows.Scan(
+			&i.ID,
+			&i.Year,
+			&i.Category,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const PrizesByYear = `-- name: PrizesByYear :many
+SELECT id, year, category, updated_at FROM prizes WHERE year = $1 ORDER BY category
+`
+
+func (q *Queries) PrizesByYear(ctx context.Context, year int32) ([]Prize, error) {
+	rows, err := q.db.Query(ctx, PrizesByYear, year)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Prize
+	for rows.Next() {
+		var i Prize
+		if err := rows.Scan(
+			&i.ID,
+			&i.Year,
+			&i.Category,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const PrizesList = `-- name: PrizesList :many
+SELECT id, year, category, updated_at FROM prizes ORDER BY id
+`
+
+func (q *Queries) PrizesList(ctx context.Context) ([]Prize, error) {
+	rows, err := q.db.Query(ctx, PrizesList)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Prize
+	for rows.Next() {
+		var i Prize
+		if err := rows.Scan(
+			&i.ID,
+			&i.Year,
+			&i.Category,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const PrizesListPaginated = `-- name: PrizesListPaginated :many
+SELECT id, year, category, updated_at FROM prizes ORDER BY id LIMIT $1 OFFSET $2
+`
+
+type PrizesListPaginatedParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) PrizesListPaginated(ctx context.Context, arg PrizesListPaginatedParams) ([]Prize, error) {
+	rows, err := q.db.Query(ctx, PrizesListPaginated, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Prize
+	for rows.Next() {
+		var i Prize
+		if err := rows.Scan(
+			&i.ID,
+			&i.Year,
+			&i.Category,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const UpdatePrize = `-- name: UpdatePrize :one
+UPDATE prizes
+SET year = $2, category = $3, updated_at = NOW()
+WHERE id = $1
+RETURNING id, year, category, updated_at
+`
+
+type UpdatePrizeParams struct {
+	ID       int32
+	Year     int32
+	Category string
+}
+
+func (q *Queries) UpdatePrize(ctx context.Context, arg UpdatePrizeParams) (Prize, error) {
+	row := q.db.QueryRow(ctx, UpdatePrize, arg.ID, arg.Year, arg.Category)
+	var i Prize
+	err := row.Scan(
+		&i.ID,
+		&i.Year,
+		&i.Category,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

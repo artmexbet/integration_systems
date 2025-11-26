@@ -3,13 +3,15 @@ CREATE TABLE IF NOT EXISTS laureates (
     firstname VARCHAR(100) NOT NULL,
     surname VARCHAR(100),
     motivation TEXT NOT NULL,
-    share INT NOT NULL
+    share INT NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS prizes (
     id SERIAL PRIMARY KEY,
     year INT NOT NULL,
-    category VARCHAR(100) NOT NULL
+    category VARCHAR(100) NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS prizes_to_laureates (

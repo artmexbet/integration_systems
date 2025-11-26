@@ -14,12 +14,14 @@ type Laureate struct {
 	Surname    pgtype.Text
 	Motivation string
 	Share      int32
+	UpdatedAt  pgtype.Timestamp
 }
 
 type Prize struct {
-	ID       int32
-	Year     int32
-	Category string
+	ID        int32
+	Year      int32
+	Category  string
+	UpdatedAt pgtype.Timestamp
 }
 
 type PrizesToLaureate struct {
