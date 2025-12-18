@@ -1,0 +1,712 @@
+basePath: /
+definitions:
+  v1.CategoriesResponse:
+    description: List of prize categories
+    properties:
+      categories:
+        items:
+          type: string
+        type: array
+    type: object
+  v1.CreateLaureateRequest:
+    description: Create laureate request body
+    properties:
+      firstname:
+        type: string
+      id:
+        type: integer
+      motivation:
+        type: string
+      share:
+        maximum: 4
+        minimum: 1
+        type: integer
+      surname:
+        type: string
+    required:
+    - firstname
+    - id
+    - motivation
+    - share
+    type: object
+  v1.CreatePrizeRequest:
+    description: Create prize request body
+    properties:
+      category:
+        type: string
+      laureate_ids:
+        items:
+          type: integer
+        type: array
+      year:
+        minimum: 1901
+        type: integer
+    required:
+    - category
+    - year
+    type: object
+  v1.ErrorResponse:
+    description: Error response with message
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  v1.LastUpdateResponse:
+    description: Last dataset update information
+    properties:
+      last_update:
+        type: string
+    type: object
+  v1.LaureateListResponse:
+    description: List of laureates with pagination info
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/v1.LaureateResponse'
+        type: array
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  v1.LaureateResponse:
+    description: Nobel laureate information
+    properties:
+      firstname:
+        type: string
+      id:
+        type: integer
+      motivation:
+        type: string
+      share:
+        type: integer
+      surname:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  v1.PrizeListResponse:
+    description: List of prizes with pagination info
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/v1.PrizeResponse'
+        type: array
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  v1.PrizeResponse:
+    description: Nobel prize information
+    properties:
+      category:
+        type: string
+      id:
+        type: integer
+      laureates:
+        items:
+          $ref: '#/definitions/v1.LaureateResponse'
+        type: array
+      updated_at:
+        type: string
+      year:
+        type: integer
+    type: object
+  v1.StatsResponse:
+    description: Dataset statistics
+    properties:
+      categories_count:
+        type: integer
+      laureates_count:
+        type: integer
+      prizes_count:
+        type: integer
+    type: object
+  v1.SuccessResponse:
+    description: Generic success response
+    properties:
+      message:
+        type: string
+    type: object
+  v1.UpdateLaureateRequest:
+    description: Update laureate request body
+    properties:
+      firstname:
+        type: string
+      motivation:
+        type: string
+      share:
+        maximum: 4
+        minimum: 1
+        type: integer
+      surname:
+        type: string
+    required:
+    - firstname
+    - motivation
+    - share
+    type: object
+  v1.UpdatePrizeRequest:
+    description: Update prize request body
+    properties:
+      category:
+        type: string
+      year:
+        minimum: 1901
+        type: integer
+    required:
+    - category
+    - year
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: fiber@swagger.io
+    name: API Support
+  description: This is a sample swagger for app
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Nobel Prize API
+  version: "1.0"
+paths:
+  /api/v1/categories:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all unique prize categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.CategoriesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get all categories
+      tags:
+      - Prizes
+  /api/v1/laureates:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of Nobel laureates
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        maximum: 100
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LaureateListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: List laureates
+      tags:
+      - Laureates
+    post:
+      consumes:
+      - application/json
+      description: Creates a new Nobel laureate
+      parameters:
+      - description: Laureate data
+        in: body
+        name: laureate
+        required: true
+        schema:
+          $ref: '#/definitions/v1.CreateLaureateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/v1.LaureateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Create a new laureate
+      tags:
+      - Laureates
+  /api/v1/laureates/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing Nobel laureate
+      parameters:
+      - description: Laureate ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Delete a laureate
+      tags:
+      - Laureates
+    get:
+      consumes:
+      - application/json
+      description: Returns a single laureate by their ID
+      parameters:
+      - description: Laureate ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LaureateResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get laureate by ID
+      tags:
+      - Laureates
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing Nobel laureate
+      parameters:
+      - description: Laureate ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Laureate data
+        in: body
+        name: laureate
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateLaureateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LaureateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Update a laureate
+      tags:
+      - Laureates
+  /api/v1/prizes:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of Nobel prizes
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        maximum: 100
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.PrizeListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: List prizes
+      tags:
+      - Prizes
+    post:
+      consumes:
+      - application/json
+      description: Creates a new Nobel prize
+      parameters:
+      - description: Prize data
+        in: body
+        name: prize
+        required: true
+        schema:
+          $ref: '#/definitions/v1.CreatePrizeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/v1.PrizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Create a new prize
+      tags:
+      - Prizes
+  /api/v1/prizes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing Nobel prize
+      parameters:
+      - description: Prize ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Delete a prize
+      tags:
+      - Prizes
+    get:
+      consumes:
+      - application/json
+      description: Returns a single prize by its ID with associated laureates
+      parameters:
+      - description: Prize ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.PrizeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get prize by ID
+      tags:
+      - Prizes
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing Nobel prize
+      parameters:
+      - description: Prize ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Prize data
+        in: body
+        name: prize
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdatePrizeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.PrizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Update a prize
+      tags:
+      - Prizes
+  /api/v1/prizes/category/{category}:
+    get:
+      consumes:
+      - application/json
+      description: Returns all prizes for a specific category with their laureates
+      parameters:
+      - description: Prize category (e.g., physics, chemistry, medicine, literature,
+          peace, economics)
+        in: path
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/v1.PrizeResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get prizes by category
+      tags:
+      - Prizes
+  /api/v1/prizes/year/{year}:
+    get:
+      consumes:
+      - application/json
+      description: Returns all prizes for a specific year
+      parameters:
+      - description: Prize year
+        in: path
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/v1.PrizeResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get prizes by year
+      tags:
+      - Prizes
+  /api/v1/stats:
+    get:
+      consumes:
+      - application/json
+      description: Returns count of laureates, prizes, and categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.StatsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get dataset statistics
+      tags:
+      - Stats
+  /api/v1/stats/last-update:
+    get:
+      consumes:
+      - application/json
+      description: Returns the timestamp of the last dataset update
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LastUpdateResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Get last update timestamp
+      tags:
+      - Stats
+swagger: "2.0"

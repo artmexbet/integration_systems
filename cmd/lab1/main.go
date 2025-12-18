@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"log/slog"
 	"os"
+	"time"
+
 	"ris/internal/parser"
 	"ris/internal/storage"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {

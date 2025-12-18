@@ -6,9 +6,6 @@
 *.dylib
 
 # Build output
-lab3
-lab1
-lab2
 /dist/
 /build/
 
