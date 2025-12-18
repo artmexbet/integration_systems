@@ -3,9 +3,10 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgtype"
 	"ris/internal/domain"
 	"ris/pkg/postgres/queries"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (p *Postgres) AddLaureates(ctx context.Context, laureates []domain.Laureate) error {

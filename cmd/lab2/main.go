@@ -9,10 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	_ "ris/cmd/lab2/docs"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	recoverer "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/swagger"
 	"github.com/jackc/pgx/v5/pgxpool"
 	slogfiber "github.com/samber/slog-fiber"
 
@@ -22,16 +25,21 @@ import (
 
 //go:generate swag init --parseInternal --parseDependency --parseDependencyLevel 3
 
-// @title Nobel Prize API
-// @version 1.0
-// @description This is a sample swagger for app
-// @termsOfService http://swagger.io/terms/
-// @contact.name API Support
-// @contact.email fiber@swagger.io
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host localhost:8080
-// @BasePath /
+// @title						Nobel Prize API
+// @version					1.0
+// @description				This is a sample swagger for app
+// @termsOfService				http://swagger.io/terms/
+// @contact.name				API Support
+// @contact.email				fiber@swagger.io
+// @license.name				Apache 2.0
+// @license.url				http://www.apache.org/licenses/LICENSE-2.0.html
+// @host						localhost:8080
+// @BasePath					/
+//
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							query
+// @name						api_key
+// @description				Key for identification
 func main() {
 	// Setup logging
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -96,7 +104,7 @@ func main() {
 	})
 
 	// Swagger UI - serve static files
-	app.Get("/swagger/*", swaggerHandler())
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	// Register API routes
 	v1.RegisterRoutes(app, apiHandler)
@@ -120,27 +128,4 @@ func main() {
 	}
 
 	slog.Info("Server stopped")
-}
-
-// swaggerHandler returns a handler for Swagger UI
-func swaggerHandler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		path := c.Params("*")
-
-		if path == "" || path == "/" {
-			return c.Redirect("/swagger/index.html")
-		}
-
-		if path == "index.html" {
-			c.Set("Content-Type", "text/html")
-			return c.SendString(swaggerUIHTML)
-		}
-
-		if path == "doc.json" {
-			c.Set("Content-Type", "application/json")
-			return c.SendString(swaggerSpec)
-		}
-
-		return c.Status(fiber.StatusNotFound).SendString("Not Found")
-	}
 }

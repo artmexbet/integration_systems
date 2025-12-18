@@ -205,6 +205,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Get all categories
       tags:
       - Prizes
@@ -243,6 +244,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: List laureates
       tags:
       - Laureates
@@ -278,6 +280,7 @@ paths:
             $ref: '#/definitions/v1.ErrorResponse'
       security:
       - BearerAuth: []
+      - ApiKeyAuth: []
       - ApiKeyAuth: []
       summary: Create a new laureate
       tags:
@@ -315,6 +318,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Delete a laureate
       tags:
       - Laureates
@@ -349,6 +353,7 @@ paths:
             $ref: '#/definitions/v1.ErrorResponse'
       security:
       - BearerAuth: []
+      - ApiKeyAuth: []
       - ApiKeyAuth: []
       summary: Get laureate by ID
       tags:
@@ -395,6 +400,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Update a laureate
       tags:
       - Laureates
@@ -433,6 +439,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: List prizes
       tags:
       - Prizes
@@ -468,6 +475,7 @@ paths:
             $ref: '#/definitions/v1.ErrorResponse'
       security:
       - BearerAuth: []
+      - ApiKeyAuth: []
       - ApiKeyAuth: []
       summary: Create a new prize
       tags:
@@ -505,6 +513,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Delete a prize
       tags:
       - Prizes
@@ -539,6 +548,7 @@ paths:
             $ref: '#/definitions/v1.ErrorResponse'
       security:
       - BearerAuth: []
+      - ApiKeyAuth: []
       - ApiKeyAuth: []
       summary: Get prize by ID
       tags:
@@ -585,6 +595,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Update a prize
       tags:
       - Prizes
@@ -620,6 +631,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Get prizes by category
       tags:
       - Prizes
@@ -654,6 +666,7 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Get prizes by year
       tags:
       - Prizes
@@ -679,6 +692,7 @@ paths:
             $ref: '#/definitions/v1.ErrorResponse'
       security:
       - BearerAuth: []
+      - ApiKeyAuth: []
       - ApiKeyAuth: []
       summary: Get dataset statistics
       tags:
@@ -706,7 +720,14 @@ paths:
       security:
       - BearerAuth: []
       - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Get last update timestamp
       tags:
       - Stats
+securityDefinitions:
+  ApiKeyAuth:
+    description: Key for identification
+    in: query
+    name: api_key
+    type: apiKey
 swagger: "2.0"

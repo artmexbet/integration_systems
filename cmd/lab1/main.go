@@ -25,7 +25,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	pool, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5432/ris")
+	pool, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5435/ris")
 	if err != nil {
 		panic(err)
 	}

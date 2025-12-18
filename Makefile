@@ -1,0 +1,2 @@
+format:
+	swag fmt

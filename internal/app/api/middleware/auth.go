@@ -8,7 +8,8 @@ import (
 )
 
 // AuthMiddleware creates a middleware that checks for Bearer token or API key
-// @description Authentication via Bearer token in Authorization header or api_key query parameter
+//
+//	@description	Authentication via Bearer token in Authorization header or api_key query parameter
 func AuthMiddleware() fiber.Handler {
 	apiToken := os.Getenv("API_TOKEN")
 	if apiToken == "" {

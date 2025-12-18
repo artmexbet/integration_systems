@@ -25,6 +25,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a list of all unique prize categories",
@@ -65,6 +68,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -123,6 +129,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -186,6 +195,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a single laureate by their ID",
@@ -239,6 +251,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -313,6 +328,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes an existing Nobel laureate",
@@ -371,6 +389,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a paginated list of Nobel prizes",
@@ -426,6 +447,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -489,6 +513,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns all prizes for a specific category with their laureates",
@@ -541,6 +568,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -599,6 +629,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a single prize by its ID with associated laureates",
@@ -652,6 +685,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -726,6 +762,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes an existing Nobel prize",
@@ -784,6 +823,9 @@
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns count of laureates, prizes, and categories",
@@ -824,6 +866,9 @@
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -1110,6 +1155,14 @@
                     "minimum": 1901
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Key for identification",
+            "type": "apiKey",
+            "name": "api_key",
+            "in": "query"
         }
     }
 }

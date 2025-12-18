@@ -3,14 +3,16 @@ package v1
 import "time"
 
 // ErrorResponse represents an API error response
-// @Description Error response with message
+//
+//	@Description	Error response with message
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message,omitempty"`
 }
 
 // StatsResponse represents statistics about the dataset
-// @Description Dataset statistics
+//
+//	@Description	Dataset statistics
 type StatsResponse struct {
 	LaureatesCount  int64 `json:"laureates_count"`
 	PrizesCount     int64 `json:"prizes_count"`
@@ -18,13 +20,15 @@ type StatsResponse struct {
 }
 
 // LastUpdateResponse represents the last update timestamp
-// @Description Last dataset update information
+//
+//	@Description	Last dataset update information
 type LastUpdateResponse struct {
 	LastUpdate time.Time `json:"last_update"`
 }
 
 // LaureateResponse represents a laureate in API responses
-// @Description Nobel laureate information
+//
+//	@Description	Nobel laureate information
 type LaureateResponse struct {
 	ID         int32   `json:"id"`
 	Firstname  string  `json:"firstname"`
@@ -35,7 +39,8 @@ type LaureateResponse struct {
 }
 
 // LaureateListResponse represents a list of laureates
-// @Description List of laureates with pagination info
+//
+//	@Description	List of laureates with pagination info
 type LaureateListResponse struct {
 	Data       []LaureateResponse `json:"data"`
 	Total      int64              `json:"total"`
@@ -45,7 +50,8 @@ type LaureateListResponse struct {
 }
 
 // CreateLaureateRequest represents the request to create a laureate
-// @Description Create laureate request body
+//
+//	@Description	Create laureate request body
 type CreateLaureateRequest struct {
 	ID         int32  `json:"id" validate:"required"`
 	Firstname  string `json:"firstname" validate:"required"`
@@ -55,7 +61,8 @@ type CreateLaureateRequest struct {
 }
 
 // UpdateLaureateRequest represents the request to update a laureate
-// @Description Update laureate request body
+//
+//	@Description	Update laureate request body
 type UpdateLaureateRequest struct {
 	Firstname  string `json:"firstname" validate:"required"`
 	Surname    string `json:"surname,omitempty"`
@@ -64,7 +71,8 @@ type UpdateLaureateRequest struct {
 }
 
 // PrizeResponse represents a prize in API responses
-// @Description Nobel prize information
+//
+//	@Description	Nobel prize information
 type PrizeResponse struct {
 	ID        int32              `json:"id"`
 	Year      int32              `json:"year"`
@@ -74,7 +82,8 @@ type PrizeResponse struct {
 }
 
 // PrizeListResponse represents a list of prizes
-// @Description List of prizes with pagination info
+//
+//	@Description	List of prizes with pagination info
 type PrizeListResponse struct {
 	Data       []PrizeResponse `json:"data"`
 	Total      int64           `json:"total"`
@@ -84,7 +93,8 @@ type PrizeListResponse struct {
 }
 
 // CreatePrizeRequest represents the request to create a prize
-// @Description Create prize request body
+//
+//	@Description	Create prize request body
 type CreatePrizeRequest struct {
 	Year        int32   `json:"year" validate:"required,min=1901"`
 	Category    string  `json:"category" validate:"required"`
@@ -92,20 +102,23 @@ type CreatePrizeRequest struct {
 }
 
 // UpdatePrizeRequest represents the request to update a prize
-// @Description Update prize request body
+//
+//	@Description	Update prize request body
 type UpdatePrizeRequest struct {
 	Year     int32  `json:"year" validate:"required,min=1901"`
 	Category string `json:"category" validate:"required"`
 }
 
 // CategoriesResponse represents a list of categories
-// @Description List of prize categories
+//
+//	@Description	List of prize categories
 type CategoriesResponse struct {
 	Categories []string `json:"categories"`
 }
 
 // SuccessResponse represents a generic success response
-// @Description Generic success response
+//
+//	@Description	Generic success response
 type SuccessResponse struct {
 	Message string `json:"message"`
 }

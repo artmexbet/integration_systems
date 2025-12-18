@@ -31,6 +31,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a list of all unique prize categories",
@@ -71,6 +74,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -129,6 +135,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -192,6 +201,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a single laureate by their ID",
@@ -245,6 +257,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -319,6 +334,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes an existing Nobel laureate",
@@ -377,6 +395,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a paginated list of Nobel prizes",
@@ -432,6 +453,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -495,6 +519,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns all prizes for a specific category with their laureates",
@@ -547,6 +574,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -605,6 +635,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns a single prize by its ID with associated laureates",
@@ -658,6 +691,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -732,6 +768,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes an existing Nobel prize",
@@ -790,6 +829,9 @@ const docTemplate = `{
                     },
                     {
                         "ApiKeyAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns count of laureates, prizes, and categories",
@@ -830,6 +872,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
                     },
                     {
                         "ApiKeyAuth": []
@@ -1116,6 +1161,14 @@ const docTemplate = `{
                     "minimum": 1901
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Key for identification",
+            "type": "apiKey",
+            "name": "api_key",
+            "in": "query"
         }
     }
 }`

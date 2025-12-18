@@ -22,17 +22,19 @@ func NewHandler(service Service) *Handler {
 }
 
 // GetStats godoc
-// @Summary Get dataset statistics
-// @Description Returns count of laureates, prizes, and categories
-// @Tags Stats
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Success 200 {object} StatsResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/stats [get]
+//
+//	@Summary		Get dataset statistics
+//	@Description	Returns count of laureates, prizes, and categories
+//	@Tags			Stats
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	StatsResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/stats [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetStats(c *fiber.Ctx) error {
 	stats, err := h.service.GetStats(c.Context())
 	if err != nil {
@@ -45,17 +47,19 @@ func (h *Handler) GetStats(c *fiber.Ctx) error {
 }
 
 // GetLastUpdate godoc
-// @Summary Get last update timestamp
-// @Description Returns the timestamp of the last dataset update
-// @Tags Stats
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Success 200 {object} LastUpdateResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/stats/last-update [get]
+//
+//	@Summary		Get last update timestamp
+//	@Description	Returns the timestamp of the last dataset update
+//	@Tags			Stats
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	LastUpdateResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/stats/last-update [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetLastUpdate(c *fiber.Ctx) error {
 	lastUpdate, err := h.service.GetLastUpdate(c.Context())
 	if err != nil {
@@ -68,19 +72,21 @@ func (h *Handler) GetLastUpdate(c *fiber.Ctx) error {
 }
 
 // ListLaureates godoc
-// @Summary List laureates
-// @Description Returns a paginated list of Nobel laureates
-// @Tags Laureates
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param page query int false "Page number" default(1)
-// @Param per_page query int false "Items per page" default(10) maximum(100)
-// @Success 200 {object} LaureateListResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/laureates [get]
+//
+//	@Summary		List laureates
+//	@Description	Returns a paginated list of Nobel laureates
+//	@Tags			Laureates
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			page		query		int	false	"Page number"		default(1)
+//	@Param			per_page	query		int	false	"Items per page"	default(10)	maximum(100)
+//	@Success		200			{object}	LaureateListResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
+//	@Router			/api/v1/laureates [get]
+//	@security		ApiKeyAuth
 func (h *Handler) ListLaureates(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
@@ -96,19 +102,21 @@ func (h *Handler) ListLaureates(c *fiber.Ctx) error {
 }
 
 // GetLaureate godoc
-// @Summary Get laureate by ID
-// @Description Returns a single laureate by their ID
-// @Tags Laureates
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param id path int true "Laureate ID"
-// @Success 200 {object} LaureateResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/laureates/{id} [get]
+//
+//	@Summary		Get laureate by ID
+//	@Description	Returns a single laureate by their ID
+//	@Tags			Laureates
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			id	path		int	true	"Laureate ID"
+//	@Success		200	{object}	LaureateResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/laureates/{id} [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetLaureate(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 32)
 	if err != nil {
@@ -129,19 +137,21 @@ func (h *Handler) GetLaureate(c *fiber.Ctx) error {
 }
 
 // CreateLaureate godoc
-// @Summary Create a new laureate
-// @Description Creates a new Nobel laureate
-// @Tags Laureates
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param laureate body CreateLaureateRequest true "Laureate data"
-// @Success 201 {object} LaureateResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/laureates [post]
+//
+//	@Summary		Create a new laureate
+//	@Description	Creates a new Nobel laureate
+//	@Tags			Laureates
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			laureate	body		CreateLaureateRequest	true	"Laureate data"
+//	@Success		201			{object}	LaureateResponse
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
+//	@Router			/api/v1/laureates [post]
+//	@security		ApiKeyAuth
 func (h *Handler) CreateLaureate(c *fiber.Ctx) error {
 	var req CreateLaureateRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -169,21 +179,23 @@ func (h *Handler) CreateLaureate(c *fiber.Ctx) error {
 }
 
 // UpdateLaureate godoc
-// @Summary Update a laureate
-// @Description Updates an existing Nobel laureate
-// @Tags Laureates
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param id path int true "Laureate ID"
-// @Param laureate body UpdateLaureateRequest true "Laureate data"
-// @Success 200 {object} LaureateResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/laureates/{id} [put]
+//
+//	@Summary		Update a laureate
+//	@Description	Updates an existing Nobel laureate
+//	@Tags			Laureates
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			id			path		int						true	"Laureate ID"
+//	@Param			laureate	body		UpdateLaureateRequest	true	"Laureate data"
+//	@Success		200			{object}	LaureateResponse
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
+//	@Router			/api/v1/laureates/{id} [put]
+//	@security		ApiKeyAuth
 func (h *Handler) UpdateLaureate(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 32)
 	if err != nil {
@@ -219,19 +231,21 @@ func (h *Handler) UpdateLaureate(c *fiber.Ctx) error {
 }
 
 // DeleteLaureate godoc
-// @Summary Delete a laureate
-// @Description Deletes an existing Nobel laureate
-// @Tags Laureates
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param id path int true "Laureate ID"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/laureates/{id} [delete]
+//
+//	@Summary		Delete a laureate
+//	@Description	Deletes an existing Nobel laureate
+//	@Tags			Laureates
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			id	path		int	true	"Laureate ID"
+//	@Success		200	{object}	SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/laureates/{id} [delete]
+//	@security		ApiKeyAuth
 func (h *Handler) DeleteLaureate(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 32)
 	if err != nil {
@@ -252,19 +266,21 @@ func (h *Handler) DeleteLaureate(c *fiber.Ctx) error {
 }
 
 // ListPrizes godoc
-// @Summary List prizes
-// @Description Returns a paginated list of Nobel prizes
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param page query int false "Page number" default(1)
-// @Param per_page query int false "Items per page" default(10) maximum(100)
-// @Success 200 {object} PrizeListResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes [get]
+//
+//	@Summary		List prizes
+//	@Description	Returns a paginated list of Nobel prizes
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			page		query		int	false	"Page number"		default(1)
+//	@Param			per_page	query		int	false	"Items per page"	default(10)	maximum(100)
+//	@Success		200			{object}	PrizeListResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
+//	@Router			/api/v1/prizes [get]
+//	@security		ApiKeyAuth
 func (h *Handler) ListPrizes(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
@@ -280,19 +296,21 @@ func (h *Handler) ListPrizes(c *fiber.Ctx) error {
 }
 
 // GetPrize godoc
-// @Summary Get prize by ID
-// @Description Returns a single prize by its ID with associated laureates
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param id path int true "Prize ID"
-// @Success 200 {object} PrizeResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes/{id} [get]
+//
+//	@Summary		Get prize by ID
+//	@Description	Returns a single prize by its ID with associated laureates
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			id	path		int	true	"Prize ID"
+//	@Success		200	{object}	PrizeResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/prizes/{id} [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetPrize(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 32)
 	if err != nil {
@@ -313,18 +331,20 @@ func (h *Handler) GetPrize(c *fiber.Ctx) error {
 }
 
 // GetPrizesByCategory godoc
-// @Summary Get prizes by category
-// @Description Returns all prizes for a specific category with their laureates
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param category path string true "Prize category (e.g., physics, chemistry, medicine, literature, peace, economics)"
-// @Success 200 {array} PrizeResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes/category/{category} [get]
+//
+//	@Summary		Get prizes by category
+//	@Description	Returns all prizes for a specific category with their laureates
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			category	path		string	true	"Prize category (e.g., physics, chemistry, medicine, literature, peace, economics)"
+//	@Success		200			{array}		PrizeResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
+//	@Router			/api/v1/prizes/category/{category} [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetPrizesByCategory(c *fiber.Ctx) error {
 	category := c.Params("category")
 	if category == "" {
@@ -345,18 +365,20 @@ func (h *Handler) GetPrizesByCategory(c *fiber.Ctx) error {
 }
 
 // GetPrizesByYear godoc
-// @Summary Get prizes by year
-// @Description Returns all prizes for a specific year
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param year path int true "Prize year"
-// @Success 200 {array} PrizeResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes/year/{year} [get]
+//
+//	@Summary		Get prizes by year
+//	@Description	Returns all prizes for a specific year
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			year	path		int	true	"Prize year"
+//	@Success		200		{array}		PrizeResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/v1/prizes/year/{year} [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetPrizesByYear(c *fiber.Ctx) error {
 	year, err := strconv.ParseInt(c.Params("year"), 10, 32)
 	if err != nil {
@@ -377,19 +399,21 @@ func (h *Handler) GetPrizesByYear(c *fiber.Ctx) error {
 }
 
 // CreatePrize godoc
-// @Summary Create a new prize
-// @Description Creates a new Nobel prize
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param prize body CreatePrizeRequest true "Prize data"
-// @Success 201 {object} PrizeResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes [post]
+//
+//	@Summary		Create a new prize
+//	@Description	Creates a new Nobel prize
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			prize	body		CreatePrizeRequest	true	"Prize data"
+//	@Success		201		{object}	PrizeResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/v1/prizes [post]
+//	@security		ApiKeyAuth
 func (h *Handler) CreatePrize(c *fiber.Ctx) error {
 	var req CreatePrizeRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -417,21 +441,23 @@ func (h *Handler) CreatePrize(c *fiber.Ctx) error {
 }
 
 // UpdatePrize godoc
-// @Summary Update a prize
-// @Description Updates an existing Nobel prize
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param id path int true "Prize ID"
-// @Param prize body UpdatePrizeRequest true "Prize data"
-// @Success 200 {object} PrizeResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes/{id} [put]
+//
+//	@Summary		Update a prize
+//	@Description	Updates an existing Nobel prize
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			id		path		int					true	"Prize ID"
+//	@Param			prize	body		UpdatePrizeRequest	true	"Prize data"
+//	@Success		200		{object}	PrizeResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/v1/prizes/{id} [put]
+//	@security		ApiKeyAuth
 func (h *Handler) UpdatePrize(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 32)
 	if err != nil {
@@ -467,19 +493,21 @@ func (h *Handler) UpdatePrize(c *fiber.Ctx) error {
 }
 
 // DeletePrize godoc
-// @Summary Delete a prize
-// @Description Deletes an existing Nobel prize
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Param id path int true "Prize ID"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/prizes/{id} [delete]
+//
+//	@Summary		Delete a prize
+//	@Description	Deletes an existing Nobel prize
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Param			id	path		int	true	"Prize ID"
+//	@Success		200	{object}	SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/prizes/{id} [delete]
+//	@security		ApiKeyAuth
 func (h *Handler) DeletePrize(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 32)
 	if err != nil {
@@ -500,17 +528,19 @@ func (h *Handler) DeletePrize(c *fiber.Ctx) error {
 }
 
 // GetCategories godoc
-// @Summary Get all categories
-// @Description Returns a list of all unique prize categories
-// @Tags Prizes
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Security ApiKeyAuth
-// @Success 200 {object} CategoriesResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/v1/categories [get]
+//
+//	@Summary		Get all categories
+//	@Description	Returns a list of all unique prize categories
+//	@Tags			Prizes
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	CategoriesResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/v1/categories [get]
+//	@security		ApiKeyAuth
 func (h *Handler) GetCategories(c *fiber.Ctx) error {
 	categories, err := h.service.GetCategories(c.Context())
 	if err != nil {

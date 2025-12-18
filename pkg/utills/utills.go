@@ -1,8 +1,9 @@
 package utills
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
 	"strconv"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func GetPtr[T any](v T) *T {
