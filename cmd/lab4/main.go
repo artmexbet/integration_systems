@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -21,7 +22,8 @@ func main() {
 	defer subs.Close()
 
 	err = subs.SubscribePrizeCreated(func(prize domain.Prize) error {
-		slog.Info("Received prize created event", "prize", prize)
+		prizeJSON, _ := json.MarshalIndent(prize, "", "  ")
+		slog.Info("Received prize created event", "prize", string(prizeJSON))
 		return nil
 	})
 	if err != nil {
@@ -30,13 +32,16 @@ func main() {
 	}
 
 	err = subs.SubscribeLaureateCreated(func(laureate domain.Laureate) error {
-		slog.Info("Received laureate created event", "laureate", laureate)
+		laureateJSON, _ := json.MarshalIndent(laureate, "", "  ")
+		slog.Info("Received laureate created event", "laureate", string(laureateJSON))
 		return nil
 	})
 	if err != nil {
 		slog.Error("Failed to subscribe to laureate created events", "error", err)
 		return
 	}
+
+	slog.Info("Listening for events from stream...")
 
 	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
