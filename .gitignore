@@ -5,6 +5,14 @@
 *.so
 *.dylib
 
+# Lab binaries in root
+/client
+/server
+/lab3
+/lab1
+/lab2
+/lab4
+
 # Build output
 /dist/
 /build/
