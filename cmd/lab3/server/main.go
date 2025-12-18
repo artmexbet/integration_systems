@@ -43,10 +43,10 @@ type SOAPFault struct {
 
 // Service request/response structures
 type UploadFileRequest struct {
-	XMLName      xml.Name `xml:"http://tempuri.org/ UploadFile"`
-	FileName     string   `xml:"fileName"`
-	FileData     string   `xml:"fileData"` // Base64 encoded
-	CallbackURL  string   `xml:"callbackURL"`
+	XMLName     xml.Name `xml:"http://tempuri.org/ UploadFile"`
+	FileName    string   `xml:"fileName"`
+	FileData    string   `xml:"fileData"` // Base64 encoded
+	CallbackURL string   `xml:"callbackURL"`
 }
 
 type UploadFileResponse struct {
@@ -60,10 +60,10 @@ type GetLastFileInfoRequest struct {
 }
 
 type GetLastFileInfoResponse struct {
-	XMLName  xml.Name `xml:"http://tempuri.org/ GetLastFileInfoResponse"`
-	FileName string   `xml:"fileName"`
-	FileSize int64    `xml:"fileSize"`
-	UploadTime string `xml:"uploadTime"`
+	XMLName    xml.Name `xml:"http://tempuri.org/ GetLastFileInfoResponse"`
+	FileName   string   `xml:"fileName"`
+	FileSize   int64    `xml:"fileSize"`
+	UploadTime string   `xml:"uploadTime"`
 }
 
 type GetFileListCSVRequest struct {
@@ -85,10 +85,10 @@ type GetUptimeResponse struct {
 }
 
 type UploadNotification struct {
-	XMLName xml.Name `xml:"http://tempuri.org/ UploadNotification"`
-	Success bool     `xml:"success"`
-	Message string   `xml:"message"`
-	FileName string  `xml:"fileName"`
+	XMLName  xml.Name `xml:"http://tempuri.org/ UploadNotification"`
+	Success  bool     `xml:"success"`
+	Message  string   `xml:"message"`
+	FileName string   `xml:"fileName"`
 }
 
 // FileInfo represents stored file metadata
@@ -123,7 +123,7 @@ func init() {
 	startTime = time.Now()
 	storageDir := "./uploaded_files"
 	os.MkdirAll(storageDir, 0755)
-	
+
 	storage = &FileStorage{
 		files:      make(map[string]FileInfo),
 		allFiles:   make([]FileInfo, 0),
@@ -134,7 +134,7 @@ func init() {
 
 func main() {
 	http.HandleFunc("/soap", handleSOAP)
-	
+
 	log.Println("SOAP Server starting on :8080")
 	log.Println("WSDL available at: http://localhost:8080/soap?wsdl")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -154,7 +154,7 @@ func handleSOAP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(getWSDL()))
 		return
 	}
-	
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -166,7 +166,7 @@ func handleSOAP(w http.ResponseWriter, r *http.Request) {
 		sendSOAPFault(w, "Client", "Failed to read request body")
 		return
 	}
-	
+
 	// Parse envelope
 	if err := xml.Unmarshal(bodyData, &envelope); err != nil {
 		sendSOAPFault(w, "Client", "Invalid SOAP request: "+err.Error())
@@ -188,7 +188,7 @@ func handleSOAP(w http.ResponseWriter, r *http.Request) {
 
 	// Process request based on the full body content
 	var response interface{}
-	
+
 	bodyStr := string(bodyData)
 	if strings.Contains(bodyStr, "UploadFile") && !strings.Contains(bodyStr, "UploadFileResponse") {
 		var envWithReq struct {
@@ -248,7 +248,7 @@ func handleUploadFile(req UploadFileRequest, username string) UploadFileResponse
 		UploadTime: time.Now(),
 		Username:   username,
 	}
-	
+
 	storage.mu.Lock()
 	storage.files[username] = fileInfo
 	storage.allFiles = append(storage.allFiles, fileInfo)
@@ -263,22 +263,22 @@ func handleUploadFile(req UploadFileRequest, username string) UploadFileResponse
 
 func validateFile(fileName string, fileData []byte) error {
 	fileSize := int64(len(fileData))
-	
+
 	// Check if file is empty
 	if fileSize == 0 {
 		return fmt.Errorf("file is empty")
 	}
-	
+
 	// Check size limit (3 MB)
 	if fileSize > 3*1024*1024 {
 		return fmt.Errorf("file size exceeds 3 MB limit")
 	}
-	
+
 	// Check if filename contains 'Ж' or 'ж'
 	if strings.ContainsAny(fileName, "Жж") {
 		return fmt.Errorf("filename contains forbidden character 'Ж'")
 	}
-	
+
 	// Check if file contains only valid JSON
 	var js interface{}
 	if err := json.Unmarshal(fileData, &js); err == nil {
@@ -289,16 +289,16 @@ func validateFile(fileName string, fileData []byte) error {
 			return fmt.Errorf("file contains only JSON data")
 		}
 	}
-	
+
 	// Check storage space
 	storage.mu.RLock()
 	available := storage.maxStorage - storage.currentUsage
 	storage.mu.RUnlock()
-	
+
 	if fileSize > available {
 		return fmt.Errorf("insufficient storage space")
 	}
-	
+
 	return nil
 }
 
@@ -350,8 +350,8 @@ func handleGetLastFileInfo(username string) GetLastFileInfoResponse {
 
 	if !exists {
 		return GetLastFileInfoResponse{
-			FileName: "",
-			FileSize: 0,
+			FileName:   "",
+			FileSize:   0,
 			UploadTime: "",
 		}
 	}
@@ -372,10 +372,10 @@ func handleGetFileListCSV() GetFileListCSVResponse {
 	// Create CSV
 	var buf strings.Builder
 	writer := csv.NewWriter(&buf)
-	
+
 	// Write header
 	writer.Write([]string{"Username", "FileName", "FileSize", "UploadTime"})
-	
+
 	// Write data
 	for _, f := range files {
 		writer.Write([]string{
@@ -409,7 +409,7 @@ func sendSOAPResponse(w http.ResponseWriter, response interface{}) {
 
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	
+
 	w.Write([]byte(xml.Header))
 	if err := xml.NewEncoder(w).Encode(envelope); err != nil {
 		log.Printf("Error encoding response: %v", err)
@@ -428,7 +428,7 @@ func sendSOAPFault(w http.ResponseWriter, code, message string) {
 
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
-	
+
 	w.Write([]byte(xml.Header))
 	xml.NewEncoder(w).Encode(envelope)
 }

@@ -32,7 +32,7 @@ func main() {
 	fmt.Println("Authentication credentials:")
 	fmt.Println("  user1:pass1, user2:pass2, admin:admin")
 	fmt.Println()
-	
+
 	if len(os.Args) > 1 && os.Args[1] == "--help" {
 		fmt.Println("For more details, see cmd/lab3/README.md")
 	}
