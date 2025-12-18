@@ -102,8 +102,7 @@ type FileInfo struct {
 // FileStorage manages uploaded files
 type FileStorage struct {
 	mu           sync.RWMutex
-	files        map[string]FileInfo // username -> last file
-	allFiles     []FileInfo
+	files        map[string]FileInfo // username -> file info (current file per user)
 	storageDir   string
 	maxStorage   int64
 	currentUsage int64
@@ -126,7 +125,6 @@ func init() {
 
 	storage = &FileStorage{
 		files:      make(map[string]FileInfo),
-		allFiles:   make([]FileInfo, 0),
 		storageDir: storageDir,
 		maxStorage: 100 * 1024 * 1024, // 100 MB max storage
 	}
@@ -250,7 +248,6 @@ func handleUploadFile(req UploadFileRequest, username string) UploadFileResponse
 		storage.currentUsage -= oldFile.FileSize
 	}
 	storage.files[username] = fileInfo
-	storage.allFiles = append(storage.allFiles, fileInfo)
 	storage.currentUsage += fileInfo.FileSize
 	storage.mu.Unlock()
 
@@ -361,8 +358,10 @@ func handleGetLastFileInfo(username string) GetLastFileInfoResponse {
 
 func handleGetFileListCSV() GetFileListCSVResponse {
 	storage.mu.RLock()
-	files := make([]FileInfo, len(storage.allFiles))
-	copy(files, storage.allFiles)
+	files := make([]FileInfo, 0, len(storage.files))
+	for _, fileInfo := range storage.files {
+		files = append(files, fileInfo)
+	}
 	storage.mu.RUnlock()
 
 	// Create CSV
