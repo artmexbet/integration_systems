@@ -142,11 +142,6 @@ func main() {
 	}
 }
 
-func handleWSDL(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/xml")
-	w.Write([]byte(getWSDL()))
-}
-
 func handleSOAP(w http.ResponseWriter, r *http.Request) {
 	// Check for WSDL request first
 	if _, exists := r.URL.Query()["wsdl"]; exists {
@@ -250,6 +245,10 @@ func handleUploadFile(req UploadFileRequest, username string) UploadFileResponse
 	}
 
 	storage.mu.Lock()
+	// If user already has a file, subtract its size from usage
+	if oldFile, exists := storage.files[username]; exists {
+		storage.currentUsage -= oldFile.FileSize
+	}
 	storage.files[username] = fileInfo
 	storage.allFiles = append(storage.allFiles, fileInfo)
 	storage.currentUsage += fileInfo.FileSize
@@ -274,8 +273,9 @@ func validateFile(fileName string, fileData []byte) error {
 		return fmt.Errorf("file size exceeds 3 MB limit")
 	}
 
-	// Check if filename contains 'Ж' or 'ж'
-	if strings.ContainsAny(fileName, "Жж") {
+	// Check if filename contains 'Ж' or 'ж' (case-insensitive check)
+	lowerName := strings.ToLower(fileName)
+	if strings.Contains(lowerName, "ж") {
 		return fmt.Errorf("filename contains forbidden character 'Ж'")
 	}
 
@@ -283,11 +283,7 @@ func validateFile(fileName string, fileData []byte) error {
 	var js interface{}
 	if err := json.Unmarshal(fileData, &js); err == nil {
 		// File is valid JSON, reject it
-		trimmed := strings.TrimSpace(string(fileData))
-		if (strings.HasPrefix(trimmed, "{") && strings.HasSuffix(trimmed, "}")) ||
-			(strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]")) {
-			return fmt.Errorf("file contains only JSON data")
-		}
+		return fmt.Errorf("file contains only JSON data")
 	}
 
 	// Check storage space
