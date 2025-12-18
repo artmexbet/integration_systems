@@ -1,11 +1,36 @@
 package v1
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
+
+// Service defines the interface for the Nobel Prize API service
+type Service interface {
+	// Stats
+	GetStats(ctx context.Context) (*StatsResponse, error)
+	GetLastUpdate(ctx context.Context) (*LastUpdateResponse, error)
+
+	// Laureates
+	ListLaureates(ctx context.Context, page, perPage int) (*LaureateListResponse, error)
+	GetLaureate(ctx context.Context, id int32) (*LaureateResponse, error)
+	CreateLaureate(ctx context.Context, req *CreateLaureateRequest) (*LaureateResponse, error)
+	UpdateLaureate(ctx context.Context, id int32, req *UpdateLaureateRequest) (*LaureateResponse, error)
+	DeleteLaureate(ctx context.Context, id int32) error
+
+	// Prizes
+	ListPrizes(ctx context.Context, page, perPage int) (*PrizeListResponse, error)
+	GetPrize(ctx context.Context, id int32) (*PrizeResponse, error)
+	GetPrizesByCategory(ctx context.Context, category string) ([]PrizeResponse, error)
+	GetPrizesByYear(ctx context.Context, year int32) ([]PrizeResponse, error)
+	CreatePrize(ctx context.Context, req *CreatePrizeRequest) (*PrizeResponse, error)
+	UpdatePrize(ctx context.Context, id int32, req *UpdatePrizeRequest) (*PrizeResponse, error)
+	DeletePrize(ctx context.Context, id int32) error
+	GetCategories(ctx context.Context) (*CategoriesResponse, error)
+}
 
 // Handler handles HTTP requests for the Nobel Prize API
 type Handler struct {
@@ -153,19 +178,9 @@ func (h *Handler) GetLaureate(c *fiber.Ctx) error {
 //	@Router			/api/v1/laureates [post]
 //	@security		ApiKeyAuth
 func (h *Handler) CreateLaureate(c *fiber.Ctx) error {
-	var req CreateLaureateRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "Bad Request",
-			Message: "Invalid request body",
-		})
-	}
-
-	if err := h.validator.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "Validation Error",
-			Message: err.Error(),
-		})
+	req, err := parseBody[CreateLaureateRequest](h, c)
+	if err != nil {
+		return err
 	}
 
 	laureate, err := h.service.CreateLaureate(c.Context(), &req)
@@ -415,19 +430,9 @@ func (h *Handler) GetPrizesByYear(c *fiber.Ctx) error {
 //	@Router			/api/v1/prizes [post]
 //	@security		ApiKeyAuth
 func (h *Handler) CreatePrize(c *fiber.Ctx) error {
-	var req CreatePrizeRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "Bad Request",
-			Message: "Invalid request body",
-		})
-	}
-
-	if err := h.validator.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "Validation Error",
-			Message: err.Error(),
-		})
+	req, err := parseBody[CreatePrizeRequest](h, c)
+	if err != nil {
+		return err
 	}
 
 	prize, err := h.service.CreatePrize(c.Context(), &req)
@@ -438,6 +443,25 @@ func (h *Handler) CreatePrize(c *fiber.Ctx) error {
 		})
 	}
 	return c.Status(fiber.StatusCreated).JSON(prize)
+}
+
+func parseBody[T any](h *Handler, c *fiber.Ctx) (T, error) {
+	var req T
+	if err := c.BodyParser(&req); err != nil {
+		return req, c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "Bad Request",
+			Message: "Invalid request body",
+		})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return req, c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "Validation Error",
+			Message: err.Error(),
+		})
+	}
+
+	return req, nil
 }
 
 // UpdatePrize godoc

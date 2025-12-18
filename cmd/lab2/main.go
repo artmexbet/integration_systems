@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"ris/internal/publisher"
 	"syscall"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 	slogfiber "github.com/samber/slog-fiber"
 
 	v1 "ris/internal/app/api/v1"
@@ -76,7 +78,16 @@ func main() {
 
 	// Initialize queries and service
 	q := queries.New(pool)
-	service := v1.NewNobelService(q)
+
+	natsConn, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		slog.Error("Failed to connect to NATS", "error", err)
+		return
+	}
+	defer natsConn.Close()
+	pub := publisher.New(natsConn)
+
+	service := v1.NewNobelService(q, pub)
 	apiHandler := v1.NewHandler(service)
 
 	// Setup Fiber app

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"ris/internal/domain"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -11,38 +13,21 @@ import (
 	"ris/pkg/postgres/queries"
 )
 
-// Service defines the interface for the Nobel Prize API service
-type Service interface {
-	// Stats
-	GetStats(ctx context.Context) (*StatsResponse, error)
-	GetLastUpdate(ctx context.Context) (*LastUpdateResponse, error)
-
-	// Laureates
-	ListLaureates(ctx context.Context, page, perPage int) (*LaureateListResponse, error)
-	GetLaureate(ctx context.Context, id int32) (*LaureateResponse, error)
-	CreateLaureate(ctx context.Context, req *CreateLaureateRequest) (*LaureateResponse, error)
-	UpdateLaureate(ctx context.Context, id int32, req *UpdateLaureateRequest) (*LaureateResponse, error)
-	DeleteLaureate(ctx context.Context, id int32) error
-
-	// Prizes
-	ListPrizes(ctx context.Context, page, perPage int) (*PrizeListResponse, error)
-	GetPrize(ctx context.Context, id int32) (*PrizeResponse, error)
-	GetPrizesByCategory(ctx context.Context, category string) ([]PrizeResponse, error)
-	GetPrizesByYear(ctx context.Context, year int32) ([]PrizeResponse, error)
-	CreatePrize(ctx context.Context, req *CreatePrizeRequest) (*PrizeResponse, error)
-	UpdatePrize(ctx context.Context, id int32, req *UpdatePrizeRequest) (*PrizeResponse, error)
-	DeletePrize(ctx context.Context, id int32) error
-	GetCategories(ctx context.Context) (*CategoriesResponse, error)
+type Publisher interface {
+	PublishPrizeCreated(prize domain.Prize) error
+	PublishLaureateCreated(laureate domain.Laureate) error
 }
 
 // NobelService implements the Service interface
 type NobelService struct {
 	queries *queries.Queries
+
+	publisher Publisher
 }
 
 // NewNobelService creates a new NobelService instance
-func NewNobelService(q *queries.Queries) *NobelService {
-	return &NobelService{queries: q}
+func NewNobelService(q *queries.Queries, publisher Publisher) *NobelService {
+	return &NobelService{queries: q, publisher: publisher}
 }
 
 // GetStats returns statistics about the dataset
@@ -152,6 +137,17 @@ func (s *NobelService) CreateLaureate(ctx context.Context, req *CreateLaureateRe
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create laureate: %w", err)
+	}
+
+	err = s.publisher.PublishLaureateCreated(domain.Laureate{
+		Id:         laureate.ID,
+		Firstname:  laureate.Firstname,
+		Surname:    laureate.Surname.String,
+		Motivation: laureate.Motivation,
+		Share:      laureate.Share,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to publish laureate created event: %w", err)
 	}
 	resp := laureateToResponse(laureate)
 	return &resp, nil
@@ -287,8 +283,9 @@ func (s *NobelService) CreatePrize(ctx context.Context, req *CreatePrizeRequest)
 		return nil, fmt.Errorf("failed to create prize: %w", err)
 	}
 
+	laureates := make([]domain.Laureate, len(req.LaureateIDs))
 	// Link laureates if provided
-	for _, laureateID := range req.LaureateIDs {
+	for i, laureateID := range req.LaureateIDs {
 		err = s.queries.LinkLaureateToPrizeSingle(ctx, queries.LinkLaureateToPrizeSingleParams{
 			PrizeID:    prize.ID,
 			LaureateID: laureateID,
@@ -296,6 +293,17 @@ func (s *NobelService) CreatePrize(ctx context.Context, req *CreatePrizeRequest)
 		if err != nil {
 			return nil, fmt.Errorf("failed to link laureate %d to prize: %w", laureateID, err)
 		}
+
+		laureates[i] = domain.Laureate{Id: laureateID}
+	}
+
+	err = s.publisher.PublishPrizeCreated(domain.Prize{
+		Year:      strconv.Itoa(int(prize.Year)),
+		Category:  prize.Category,
+		Laureates: laureates,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to publish prize created event: %w", err)
 	}
 
 	return s.GetPrize(ctx, prize.ID)

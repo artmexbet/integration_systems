@@ -21,11 +21,11 @@ func (r *RawLaureate) ToLaureate() Laureate {
 }
 
 type Laureate struct {
-	Id         int32
-	Firstname  string
-	Surname    string
-	Motivation string
-	Share      int32
+	Id         int32  `json:"id"`
+	Firstname  string `json:"firstname"`
+	Surname    string `json:"surname,omitempty"`
+	Motivation string `json:"motivation"`
+	Share      int32  `json:"share"`
 }
 
 type RawPrize struct {
@@ -49,10 +49,10 @@ func (r *RawPrize) ToPrize() Prize {
 }
 
 type Prize struct {
-	Year              string
-	Category          string
-	Laureates         []Laureate
-	OverallMotivation string
+	Year              string     `json:"year"`
+	Category          string     `json:"category"`
+	Laureates         []Laureate `json:"laureates"`
+	OverallMotivation string     `json:"overall_motivation"`
 }
 
 type NobelResponse struct {
