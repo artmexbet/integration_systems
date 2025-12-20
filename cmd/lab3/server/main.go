@@ -19,24 +19,25 @@ import (
 
 // SOAP Envelope structures
 type SOAPEnvelope struct {
-	XMLName xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
+	XMLName xml.Name `xml:"Envelope"`
+	XMLNS   string   `xml:"xmlns,attr,omitempty"`
 	Header  *SOAPHeader
-	Body    SOAPBody
+	Body    *SOAPBody
 }
 
 type SOAPHeader struct {
-	XMLName  xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Header"`
+	XMLName  xml.Name `xml:"Header"`
 	Username string   `xml:"username,omitempty"`
 	Password string   `xml:"password,omitempty"`
 }
 
 type SOAPBody struct {
-	XMLName xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body"`
-	Content interface{}
+	XMLName xml.Name `xml:"Body"`
+	Content string   `xml:",innerxml"`
 }
 
 type SOAPFault struct {
-	XMLName     xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Fault"`
+	XMLName     xml.Name `xml:"Fault"`
 	FaultCode   string   `xml:"faultcode"`
 	FaultString string   `xml:"faultstring"`
 }
@@ -141,6 +142,7 @@ func main() {
 }
 
 func handleSOAP(w http.ResponseWriter, r *http.Request) {
+	log.Println("SOAP Request received")
 	// Check for WSDL request first
 	if _, exists := r.URL.Query()["wsdl"]; exists {
 		w.Header().Set("Content-Type", "text/xml")
@@ -159,12 +161,14 @@ func handleSOAP(w http.ResponseWriter, r *http.Request) {
 		sendSOAPFault(w, "Client", "Failed to read request body")
 		return
 	}
+	log.Println("SOAP Request Body:", string(bodyData))
 
 	// Parse envelope
 	if err := xml.Unmarshal(bodyData, &envelope); err != nil {
 		sendSOAPFault(w, "Client", "Invalid SOAP request: "+err.Error())
 		return
 	}
+	log.Printf("SOAP Request Unmarshalled - Body Content length: %d\n", len(envelope.Body.Content))
 
 	// Authenticate
 	username := ""
@@ -179,24 +183,24 @@ func handleSOAP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Process request based on the full body content
+	// Process request based on the body content
 	var response interface{}
 
-	bodyStr := string(bodyData)
-	if strings.Contains(bodyStr, "UploadFile") && !strings.Contains(bodyStr, "UploadFileResponse") {
-		var envWithReq struct {
-			XMLName xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
-			Body    struct {
-				UploadFile UploadFileRequest `xml:"UploadFile"`
-			} `xml:"Body"`
+	bodyContent := envelope.Body.Content
+	log.Printf("Body content: %s\n", bodyContent)
+
+	if strings.Contains(bodyContent, "UploadFile") && !strings.Contains(bodyContent, "UploadFileResponse") {
+		var req UploadFileRequest
+		if err := xml.Unmarshal([]byte(bodyContent), &req); err != nil {
+			sendSOAPFault(w, "Client", "Failed to parse UploadFile request: "+err.Error())
+			return
 		}
-		xml.Unmarshal(bodyData, &envWithReq)
-		response = handleUploadFile(envWithReq.Body.UploadFile, username)
-	} else if strings.Contains(bodyStr, "GetLastFileInfo") {
+		response = handleUploadFile(req, username)
+	} else if strings.Contains(bodyContent, "GetLastFileInfo") {
 		response = handleGetLastFileInfo(username)
-	} else if strings.Contains(bodyStr, "GetFileListCSV") {
+	} else if strings.Contains(bodyContent, "GetFileListCSV") {
 		response = handleGetFileListCSV()
-	} else if strings.Contains(bodyStr, "GetUptime") {
+	} else if strings.Contains(bodyContent, "GetUptime") {
 		response = handleGetUptime()
 	} else {
 		sendSOAPFault(w, "Client", "Unknown operation")
@@ -306,13 +310,23 @@ func sendNotification(callbackURL, fileName string, success bool, message string
 		FileName: fileName,
 	}
 
+	// Marshal notification content
+	notificationBytes, err := xml.Marshal(notification)
+	if err != nil {
+		log.Printf("Failed to marshal notification: %v", err)
+		return
+	}
+
 	envelope := SOAPEnvelope{
-		Body: SOAPBody{Content: notification},
+		XMLNS: "http://schemas.xmlsoap.org/soap/envelope/",
+		Body: &SOAPBody{
+			Content: string(notificationBytes),
+		},
 	}
 
 	data, err := xml.MarshalIndent(envelope, "", "  ")
 	if err != nil {
-		log.Printf("Failed to marshal notification: %v", err)
+		log.Printf("Failed to marshal envelope: %v", err)
 		return
 	}
 
@@ -398,8 +412,19 @@ func handleGetUptime() GetUptimeResponse {
 }
 
 func sendSOAPResponse(w http.ResponseWriter, response interface{}) {
+	// Marshal response content
+	responseBytes, err := xml.Marshal(response)
+	if err != nil {
+		log.Printf("Error marshaling response: %v", err)
+		sendSOAPFault(w, "Server", "Failed to create response")
+		return
+	}
+
 	envelope := SOAPEnvelope{
-		Body: SOAPBody{Content: response},
+		XMLNS: "http://schemas.xmlsoap.org/soap/envelope/",
+		Body: &SOAPBody{
+			Content: string(responseBytes),
+		},
 	}
 
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
@@ -417,8 +442,14 @@ func sendSOAPFault(w http.ResponseWriter, code, message string) {
 		FaultString: message,
 	}
 
+	// Marshal fault
+	faultBytes, _ := xml.Marshal(fault)
+
 	envelope := SOAPEnvelope{
-		Body: SOAPBody{Content: fault},
+		XMLNS: "http://schemas.xmlsoap.org/soap/envelope/",
+		Body: &SOAPBody{
+			Content: string(faultBytes),
+		},
 	}
 
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")

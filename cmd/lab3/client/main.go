@@ -15,22 +15,23 @@ import (
 	"time"
 )
 
-// SOAP Envelope structures
+// SOAPEnvelope structures
 type SOAPEnvelope struct {
-	XMLName xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
+	XMLName xml.Name `xml:"Envelope"`
+	XMLNS   string   `xml:"xmlns,attr"`
 	Header  *SOAPHeader
-	Body    SOAPBody
+	Body    *SOAPBody
 }
 
 type SOAPHeader struct {
-	XMLName  xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Header"`
+	XMLName  xml.Name `xml:"Header"`
 	Username string   `xml:"username,omitempty"`
 	Password string   `xml:"password,omitempty"`
 }
 
 type SOAPBody struct {
-	XMLName xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body"`
-	Content interface{}
+	XMLName xml.Name `xml:"Body"`
+	Content string   `xml:",innerxml"`
 }
 
 type SOAPFault struct {
@@ -309,17 +310,25 @@ func (c *Client) getUptime() {
 func (c *Client) sendSOAPRequest(request interface{}, response interface{}) error {
 	// Create SOAP envelope
 	envelope := SOAPEnvelope{
+		XMLNS: "http://schemas.xmlsoap.org/soap/envelope/",
 		Header: &SOAPHeader{
 			Username: c.username,
 			Password: c.password,
 		},
-		Body: SOAPBody{Content: request},
+		Body: &SOAPBody{},
 	}
+
+	// Marshal request content
+	requestBytes, err := xml.Marshal(request)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %w", err)
+	}
+	envelope.Body.Content = string(requestBytes)
 
 	// Marshal request
 	data, err := xml.MarshalIndent(envelope, "", "  ")
 	if err != nil {
-		return fmt.Errorf("failed to marshal request: %w", err)
+		return fmt.Errorf("failed to marshal body: %w", err)
 	}
 
 	// Send request
@@ -344,18 +353,35 @@ func (c *Client) sendSOAPRequest(request interface{}, response interface{}) erro
 		return fmt.Errorf("failed to read response: %w", err)
 	}
 
-	// Parse response
+	// Debug: print raw response
+	fmt.Printf("DEBUG: Raw response:\n%s\n", string(respData))
+
+	// Parse response envelope
 	var respEnvelope SOAPEnvelope
 	if err := xml.Unmarshal(respData, &respEnvelope); err != nil {
 		return fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
+	// Debug: check Body
+	fmt.Printf("DEBUG: Body is nil? %v\n", respEnvelope.Body == nil)
+	if respEnvelope.Body != nil {
+		fmt.Printf("DEBUG: Body.Content type: %T\n", respEnvelope.Body.Content)
+		fmt.Printf("DEBUG: Body.Content value: %v\n", respEnvelope.Body.Content)
+	}
+
+	if respEnvelope.Body == nil {
+		return fmt.Errorf("response body is nil")
+	}
+
+	// Get body content as bytes
+	bodyBytes := []byte(respEnvelope.Body.Content)
+
 	// Check for fault
-	bodyBytes, _ := xml.Marshal(respEnvelope.Body.Content)
 	if strings.Contains(string(bodyBytes), "Fault") {
 		var fault SOAPFault
-		xml.Unmarshal(bodyBytes, &fault)
-		return fmt.Errorf("SOAP fault: %s - %s", fault.FaultCode, fault.FaultString)
+		if err := xml.Unmarshal(bodyBytes, &fault); err == nil {
+			return fmt.Errorf("SOAP fault: %s - %s", fault.FaultCode, fault.FaultString)
+		}
 	}
 
 	// Unmarshal response
@@ -397,7 +423,8 @@ func (c *Client) handleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse notification
-	bodyBytes, _ := xml.Marshal(envelope.Body.Content)
+	bodyBytes := []byte(envelope.Body.Content)
+	log.Printf("Webhook received body: %s", string(bodyBytes))
 	var notification UploadNotification
 	if err := xml.Unmarshal(bodyBytes, &notification); err != nil {
 		log.Printf("Failed to unmarshal notification: %v", err)
