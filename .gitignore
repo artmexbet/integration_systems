@@ -5,6 +5,14 @@
 *.so
 *.dylib
 
+# Lab binaries in root
+/client
+/server
+/lab3
+/lab1
+/lab2
+/lab4
+
 # Build output
 /dist/
 /build/
@@ -34,3 +42,6 @@ Thumbs.db
 # Environment files
 .env
 .env.local
+
+# Lab3 uploaded files
+uploaded_files/
